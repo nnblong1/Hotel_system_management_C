@@ -420,36 +420,4 @@ void ChiTietPhong(void) {
     strcpy(Phong[8].kieuPhong,"vip 2   ");
     strcpy(Phong[9].kieuPhong,"vip promax   ");
     
-    
-    
-
-    
-
-   
-
-    RI[0].bed=1;
-    RI[1].bed=1;
-    RI[2].bed=2;
-    RI[3].bed=2;
-    RI[4].bed=1;
-    RI[5].bed=1;
-    RI[6].bed=2;
-    RI[7].bed=3;
-    RI[8].bed=4;
-    RI[9].bed=1;
-
-  
-
-
-
-typedef struct Phong {
-    int maPhong[10];
-    char kieuPhong[20];
-    int sogiuong;
-    char thongTinPhong[50];
-    char tinhtrang[10]; // Trống, đã thuê
-    float giaThue;
-    DoNoiThat *danhSachDoNoiThat; // Danh sách liên kết đồ nội thất
-    struct Phong *next;
-} Phong;
 
