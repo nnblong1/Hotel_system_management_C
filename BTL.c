@@ -3,511 +3,416 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
-#include <ctype.h>
-#include <conio.h>
 
 // Struct thông tin Phòng
- struct Phong {
+typedef struct Phong {
     int maPhong;
     char kieuPhong[20];
     int sogiuong;
     char thongTinPhong[50];
-    char tinhtrang[10]; // Trống, đã thuê
+    bool tinhtrang; // Trống 0, đã thuê 1
     float giaThue;
-    struct DoNoiThat *danhSachDoNoiThat; // Danh sách liên kết đồ nội thất
     struct Phong *next;
-} Phong[10];
+} Phong;
 
 // Struct thông tin Khách hàng
 typedef struct KhachHang {
     char ten[50];
     int namSinh;
-    int cccd;
+    char cccd[15];
     char gioiTinh[10];
     char soDienThoai[15];
     char queQuan[50];
-    
+    Phong *phongThue;
     char ngayThue[15];
     struct KhachHang *next;
 } KhachHang;
 
-// struct thông tin khách hàng đã đặt phòng nào
-typedef struct {
-    struct Phong *phong;
-    struct KhachHang *khachHang;
-    struct KhachHangDaDat *next;
-} KhachHangDaDat;
+// Danh sách liên kết chính
+typedef struct DanhSachLienKet {
+    KhachHang *DanhSachKhachHang;
+    Phong *DanhSachPhong;
+} DanhSachLienKet;
 
-// struct thông tin dịch vụ
-typedef struct DichVu {
-    char tenDichVu[50];
-    int soLuong;
-    float donGia;
-    struct DichVu *next;
-} DichVu;
-
-// Cấu trúc đồ nội thất
-typedef struct DoNoiThat {
-    char tenDo[50];
-    char tinhTrang[20]; // "Tốt", "Hỏng"
-    struct DoNoiThat *next;
-} DoNoiThat;
-
-// danh sách liên kết chính
-DichVu *danhSachDichVu = NULL;
-KhachHangDaDat *danhSachKhachHangDaDat = NULL;
-KhachHang *danhSachKhachHang = NULL;
-
-//header
-void header(void){
-	printf("\n" );
-	printf("\n" );
-
-
-	printf("            ________________________________________________________________________\n");
-
-	printf("            ________________________________________________________________________\n");
-
-	printf("            **********             Hotel Management System             ************\n" );
-
-	printf("            ________________________________________________________________________\n");
-
-	printf("            ________________________________________________________________________\n");
-
-
-	printf("\n" );
-	printf("\n" );
-
+// Tạo danh sách rỗng
+DanhSachLienKet* taoDanhSach() {
+    DanhSachLienKet *danhSach = (DanhSachLienKet *)malloc(sizeof(DanhSachLienKet));
+    danhSach->DanhSachKhachHang = NULL;
+    danhSach->DanhSachPhong = NULL;
+    return danhSach;
 }
 
-// // Hàm thêm phòng vào danh sách phòng
-// void themPhong(Phong **head) {
-//     Phong *newPhong = (Phong *)malloc(sizeof(Phong));
-//     printf("Nhap ma phong: ");
-//     scanf("%s", newPhong->maPhong);
-//     printf("Nhap kieu phong: ");
-//     scanf(" %[^\n]", newPhong->kieuPhong);
-//     printf("Nhap so giuong: ");
-//     scanf("%d", &newPhong->sogiuong);
-//     printf("Nhap thong tin phong: ");
-//     scanf(" %[^\n]", newPhong->thongTinPhong);
-//     printf("Nhap tinh trang phong (Trong/Da thue): ");
-//     scanf(" %[^\n]", newPhong->tinhTrang);
-//     printf("Nhap gia thue: ");
-//     scanf("%f", &newPhong->giaThue);
-//     newPhong->next = *head;
-//     *head = newPhong;
-// }
+// Kiểm tra danh sách rỗng
+bool isEmptyKhachHang(DanhSachLienKet *danhSach) {
+    return danhSach->DanhSachKhachHang == NULL;
+}
 
-// // Hàm tìm phòng theo mã phòng
-// Phong *timPhong(int maPhong) {
-//     KhachSan *ks = danhSachKhachSan;
-//     while (ks != NULL) {
-//         Phong *ph = ks->danhSachPhong;
-//         while (ph != NULL) {
-//             if (strcmp(ph->maPhong, maPhong) == 0) {
-//                 return ph;
-//             }
-//             ph = ph->next;
-//         }
-//         ks = ks->next;
-//     }
-//     return NULL;
-// }
-// // Hàm hiển thị toàn bộ thông tin khách sạn và các phòng
-// void hienThiThongTinKhachSan() {
-//     if (danhSachKhachSan == NULL) {
-//         printf("Chua co khach san nao trong danh sach!\n");
-//         return;
-//     }
+bool isEmptyPhong(DanhSachLienKet *danhSach) {
+    return danhSach->DanhSachPhong == NULL;
+}
 
-//     int sttKhachSan = 1;
-//     KhachSan *ks = danhSachKhachSan;
-//     while (ks != NULL) {
-//         printf("\nKhach san %d: %s\n", sttKhachSan++, ks->tenKhachSan);
-//         printf("Dia chi: %s\n", ks->diaChi);
-//         printf("\nDanh sach phong:\n");
-//         printf("STT\tMa phong\tKieu phong\tThong tin phong\t\tTinh trang\tGia thue\n");
+// Hàm nhập chuỗi
+void nhapChuoi(const char *thongDiep, char *ketQua, int kichThuoc) {
+    printf("%s", thongDiep);
+    fgets(ketQua, kichThuoc, stdin);
+    ketQua[strcspn(ketQua, "\n")] = '\0'; // Xóa ký tự xuống dòng
+}
 
-//         Phong *ph = ks->danhSachPhong;
-//         int sttPhong = 1;
-//         while (ph != NULL) {
-//             printf("%d\t%s\t\t%s\t\t%s\t%s\t%.2f\n",
-//                    sttPhong++, ph->maPhong, ph->kieuPhong, ph->thongTinPhong, ph->tinhTrang, ph->giaThue);
-//             ph = ph->next;
-//         }
-//         ks = ks->next;
-//     }
-// }
+// Hàm thêm khách hàng mới
+void themKhachHang(DanhSachLienKet *danhSach) {
+    char cccd[15];
+    printf("Nhap so CCCD cua khach hang: ");
+    nhapChuoi("", cccd, sizeof(cccd));
 
-// Hàm đặt phòng nghỉ
-// void datPhong() {
-//     char cccd[20], maPhong[10], ngayThue[15];
-//     printf("Nhap so CCCD cua khach hang: ");
-//     scanf("%s", cccd);
-
-//     // Kiểm tra khách hàng đã tồn tại
-//     KhachHang *kh = danhSachKhachHang;
-//     while (kh != NULL) {
-//         if (kh->cccd==cccd ) {
-//             printf("Khach hang da ton tai!\n");
-//             break;
-//         }
-//         kh = kh->next;
-//     }
-//     if (kh == NULL) {
-//         // Thêm khách hàng mới
-//         kh = (KhachHang *)malloc(sizeof(KhachHang));
-//         printf("Nhap ten khach hang: ");
-//         scanf(" %[^\n]", kh->ten);
-//         printf("Nhap nam sinh: ");
-//         scanf("%d", &kh->namSinh);
-//         printf("Nhap gioi tinh: ");
-//         scanf(" %[^\n]", kh->gioiTinh);
-//         printf("Nhap so dien thoai: ");
-//         scanf(" %[^\n]", kh->soDienThoai);
-//         printf("Nhap que quan: ");
-//         scanf(" %[^\n]", kh->queQuan);
-//         printf("Nhap so CCCD: ");
-//         scanf("%s", cccd);
-//         kh->next = danhSachKhachHang;
-//         danhSachKhachHang = kh;
-//     }
-
-//     // // Nhập mã phòng và ngày thuê
-//     // printf("Nhap ma phong can dat: ");
-//     // scanf("%d", maPhong);
-//     // Phong *ph = timPhong(maPhong);
-//     // if (ph == NULL) {
-//     //     printf("Phong khong ton tai!\n");
-//     //     return;
-//     // }
-//     // if (ph->tinhTrang == 0) {
-//     //     printf("Phong da duoc thue!\n");
-//     //     return;
-//     // }
-//     // ph->tinhTrang = 0;
-//     // strcpy(kh->maPhong, maPhong);
-//     // printf("Nhap ngay thue (dd/mm/yyyy): ");
-//     // scanf("%s", ngayThue);
-//     // strcpy(kh->ngayThue, ngayThue);
-//     // printf("Dat phong thanh cong!\n");
-
-//     // Thêm vào danh sách khách hàng đã đặt phòng
-//     KhachHangDaDat *khachHangDaDat = (KhachHangDaDat *)malloc(sizeof(KhachHangDaDat));
-//     khachHangDaDat->phong = ph;
-//     khachHangDaDat->khachHang = kh;
-//     khachHangDaDat->next = danhSachKhachHangDaDat;
-//     danhSachKhachHangDaDat = khachHangDaDat;
-// }
-// hàm xóa khách hàng khỏi danh sách khách hàng đã đặt
-void xoaKhachHang(KhachHang *kh) {
-    KhachHangDaDat *prev = NULL, *current = danhSachKhachHangDaDat;
-    while (current != NULL) {
-        if (current->khachHang == kh) {
-            if (prev == NULL) {
-                danhSachKhachHangDaDat = current->next;
-            } else {
-                prev->next = current->next;
-            }
-            free(current);
-            break;
+    // Kiểm tra khách hàng đã tồn tại hay chưa
+    KhachHang *current = danhSach->DanhSachKhachHang;
+    while (current) {
+        if (strcmp(current->cccd, cccd) == 0) {
+            printf("Khach hang da ton tai trong danh sach!\n");
+            return;
         }
-        prev = current;
         current = current->next;
     }
-}
-// // Hàm tìm phòng trống
-// void timPhongTrong() {
-//     int found = 0;
-//     KhachSan *ks = danhSachKhachSan;
-//     while (ks != NULL) {
-//         Phong *ph = ks->danhSachPhong;
-//         while (ph != NULL) {
-//             if (strcmp(ph->tinhTrang, "Trong") == 0) {
-//                 if (!found) {
-//                     printf("Danh sach phong trong:\n");
-//                     printf("Ma phong\tKieu phong\tThong tin phong\t\tGia thue\n");
-//                     found = 1;
-//                 }
-//                 printf("%s\t\t%s\t\t%s\t%.2f\n", ph->maPhong, ph->kieuPhong, ph->thongTinPhong, ph->giaThue);
-//             }
-//             ph = ph->next;
-//         }
-//         ks = ks->next;
-//     }
-//     if (!found) {
-//         printf("Khong co phong trong nao!\n");
-//     }
-// }
-// hàm tìm khách hàng theo CCCD
-KhachHang * timKhachHang(int cccd) {
-    KhachHang *kh = danhSachKhachHang;
-    while (kh != NULL) {
-        if (kh->cccd == cccd) {
-            return kh;
+
+    // Tạo khách hàng mới
+    KhachHang *kh = (KhachHang *)malloc(sizeof(KhachHang));
+    if (!kh) {
+        printf("Khong the cap phat bo nho!\n");
+        return;
+    }
+
+    strcpy(kh->cccd, cccd);
+    nhapChuoi("Nhap ten khach hang: ", kh->ten, sizeof(kh->ten));
+    printf("Nhap nam sinh: ");
+    scanf("%d", &kh->namSinh);
+    getchar();
+    nhapChuoi("Nhap gioi tinh: ", kh->gioiTinh, sizeof(kh->gioiTinh));
+    nhapChuoi("Nhap so dien thoai: ", kh->soDienThoai, sizeof(kh->soDienThoai));
+    nhapChuoi("Nhap que quan: ", kh->queQuan, sizeof(kh->queQuan));
+
+    kh->phongThue = NULL;
+    strcpy(kh->ngayThue, ""); // Ngày thuê trống
+    kh->next = NULL;
+
+    // Thêm khách hàng vào danh sách liên kết
+    if (danhSach->DanhSachKhachHang == NULL) {
+        danhSach->DanhSachKhachHang = kh;
+    } else {
+        KhachHang *current = danhSach->DanhSachKhachHang;
+        while (current->next) {
+            current = current->next;
         }
-        kh = kh->next;
+        current->next = kh;
+    }
+    printf("Them khach hang thanh cong!\n");
+}
+// hàm thêm phòng
+void themPhong(DanhSachLienKet *danhSach, Phong *phong) {
+    if (danhSach->DanhSachPhong == NULL) {
+        danhSach->DanhSachPhong = phong;
+    } else {
+        Phong *current = danhSach->DanhSachPhong;
+        while (current->next) {
+            current = current->next;
+        }
+        current->next = phong;
+    }
+}
+// hàm thêm 10 phòng mặc định
+
+void them10PhongMacDinh(DanhSachLienKet *danhSach) {
+    int maPhong[10] = {101, 102, 103, 104, 105, 106, 107, 108, 109, 110};
+    char *kieuPhong[10] = {"Don", "Doi", "Suite", "Deluxe", "Superior", "Studio", "Executive", "Presidential", "Family", "Classic"};
+    int soGiuong[10] = {1, 2, 3, 4, 2, 2, 3, 5, 4, 1};
+    char *thongTinPhong[10] = {
+        "Giuong don, TV, dieu hoa",
+        "Giuong doi, ban lam viec",
+        "Phong cao cap, tam thu gian",
+        "Phong deluxe, ban cong",
+        "Phong superior, ho boi",
+        "Phong studio, bep nho",
+        "Phong executive, sofa",
+        "Phong tong thong, phong tam rieng",
+        "Phong gia dinh, phong ngu rieng",
+        "Phong co dien, thiet ke dep"
+    };
+    float giaThue[10] = {500.0, 1000.0, 1500.0, 2000.0, 1200.0, 800.0, 1800.0, 3000.0, 2500.0, 700.0};
+
+    for (int i = 0; i < 10; i++) {
+        Phong *newPhong = (Phong *)malloc(sizeof(Phong));
+        newPhong->maPhong = maPhong[i];
+        strcpy(newPhong->kieuPhong, kieuPhong[i]);
+        newPhong->sogiuong = soGiuong[i];
+        strcpy(newPhong->thongTinPhong, thongTinPhong[i]);
+        newPhong->tinhtrang = false;
+        newPhong->giaThue = giaThue[i];
+        newPhong->next = NULL;
+        themPhong(danhSach, newPhong);  
+    }  
+
+    printf("Da them 10 phong mac dinh vao danh sach!\n");
+}
+// hàm hiển thị 10 phòng mặc định
+void hienThi10PhongMacDinh(DanhSachLienKet *danhSach) {
+    Phong *current = danhSach->DanhSachPhong;
+    int count = 0;
+    while (current && count < 10) {
+        printf("Ma phong: %d, Kieu phong: %s, So giuong: %d, Thong tin phong: %s, Tinh trang: %s, Gia thue: %.2f VND\n",
+               current->maPhong, current->kieuPhong, current->sogiuong, current->thongTinPhong, current->tinhtrang ? "Da thue" : "Trong", current->giaThue);
+        current = current->next;
+        count++;
+    }
+}
+// Hàm tìm khách hàng theo CCCD
+KhachHang* timKhachHangTheoCCCD(DanhSachLienKet *danhSach, const char *cccd) {
+    KhachHang *current = danhSach->DanhSachKhachHang;
+    while (current) {
+        if (strcmp(current->cccd, cccd) == 0) {
+            return current;
+        }
+        current = current->next;
     }
     return NULL;
 }
 
-// Hàm hiển thị thông tin khách hàng
-void hienThiKhachHang(int cccd) {
-    KhachHang *kh = danhSachKhachHang;
-    kh = timKhachHang(cccd);
-    if (kh == NULL) {
-        printf("Khong tim thay khach hang!\n");
-        return;
+// Hàm tìm phòng còn trống
+Phong* timPhongConTrong(DanhSachLienKet *danhSach) {
+    Phong *current = danhSach->DanhSachPhong;
+    while (current) {
+        if (!current->tinhtrang) {
+            return current;
+        }
+        current = current->next;
     }
-    else{
-    printf("Thong tin khach hang:\n");
-    printf("Ten: %s\n", kh->ten);
-    printf("Nam sinh: %d\n", kh->namSinh);
-    printf("Gioi tinh: %s\n", kh->gioiTinh);
-    printf("So dien thoai: %s\n", kh->soDienThoai);
-    printf("Que quan: %s\n", kh->queQuan);
-    printf("Ma phong: %s\n", kh->maPhong);
-    printf("Ngay thue: %s\n", kh->ngayThue);
+    return NULL;
 }
+
+// Hiển thị danh sách khách hàng theo bảng cơ sở dữ liệu
+void hienThiDanhSachKhachHang(DanhSachLienKet *danhSach) {
+    if (isEmptyKhachHang(danhSach)) {
+        printf("Danh sach khach hang rong!\n");
+        return;
+    }
+
+    KhachHang *current = danhSach->DanhSachKhachHang;
+    printf("+---------------------------------------+\n");
+    printf("|  Ten  |  CCCD  |  SDT  |  Phong  |  Que quan  |\n");
+    printf("+---------------------------------------+\n");
+    while (current) {
+        printf("| %s | %s | %s | %s | %s |\n",
+               current->ten, current->cccd, current->soDienThoai,
+               current->phongThue ? current->phongThue->kieuPhong : "Chua thue",
+               current->queQuan);
+        current = current->next;
+    }
+    printf("+---------------------------------------+\n");
 }
-// Hàm nhập ID khách hàng muốn checkout, trả phòng và thanh toán
-void ChonKHcheckout(KhachHangDaDat *KhachHang) {  
-    if (KhachHang == NULL) {
-        printf("Khách hàng không tồn tại!\n");
+
+// Xóa khách hàng khỏi danh sách
+void xoaKhachHang(DanhSachLienKet *danhSach, const char *cccd) {
+    if (isEmptyKhachHang(danhSach)) {
+        printf("Danh sach khach hang rong!\n");
         return;
     }
-    KhachHangDaDat *khachHangCheckout = KhachHang;
-    int id;
-    printf("Nhập ID khách hàng cần checkout: ");
-    scanf("%d", &id);
-    khachHangCheckout = timKhachHang(id); 
-    if (khachHangCheckout == NULL) {
-        printf("Không tìm thấy khách hàng với ID:  %d\n", id);
-        return;
-    }
-// hàm thanh toán tiền phòng
-void ThanhToanTienPhong(int cccd) {
 
-    printf("Thanh toán tiền phòng cho KH: ");
-    timKhachHang(cccd);
-    KhachHangDaDat *kh = timKhachHang(cccd);  
-    if (kh == NULL) {
-        printf("Không tìm thấy khách hàng với ID:  %d\n", cccd);
-        return;
-    }
-        // Tìm khách hàng dựa vào CCCD
-        if (kh->khachHang->cccd == cccd) {
+    KhachHang *current = danhSach->DanhSachKhachHang;
+    KhachHang *prev = NULL;
 
-            // Nhập ngày trả phòng
-            char ngayTra[15];
-            printf("Nhập ngày trả phòng (dd/mm/yyyy): ");
-            scanf("%s", ngayTra);
-
-            // Tính toán số ngày thuê phòng
-            struct tm tmThue = {0}, tmTra = {0};
-            strptime(kh->khachHang->ngayThue, "%d/%m/%Y", &tmThue);
-            strptime(ngayTra, "%d/%m/%Y", &tmTra);
-
-            time_t tThue = mktime(&tmThue);
-            time_t tTra = mktime(&tmTra);
-
-            if (tTra < tThue) {
-                printf("Lỗi: Ngày trả phòng không hợp lệ.\n");
-                return;
+    while (current) {
+        if (strcmp(current->cccd, cccd) == 0) {
+            if (prev == NULL) {
+                danhSach->DanhSachKhachHang = current->next;
+            } else {
+                prev->next = current->next;
             }
 
-            double soNgayThue = difftime(tTra, tThue) / (60 * 60 * 24);
-            switch (kh->khachHang->maPhong) {
-                    case 101:
-                        kh->khachHang->tienPhong = stay * 100000;
-                        phong->tinhTrang = "Trong";
-                        break;
-                    case 102:
-                        kh->khachHang->tienPhong = stay * 100000;
-                        phong->tinhTrang = "Trong";
-                        break;
-                    case 103:
-                        kh->khachHang->tienPhong = stay * 100000;
-                        phong->tinhTrang = "Trong";
-                        break;
-                    case 104:
-                        kh->khachHang->tienPhong = stay * 100000;
-                        phong->tinhTrang = "Trong";
-                        break;
-                    case 105:
-                        kh->khachHang->tienPhong = stay * 100000;
-                        phong->tinhTrang = "Trong";
-                        break;
-                    case 106:
-                        kh->khachHang->tienPhong = stay * 100000;
-                        phong->tinhTrang = "Trong";
-                        break;
-                    case 107:           
-                        kh->khachHang->tienPhong = stay * 100000;
-                        phong->tinhTrang = "Trong";
-                        break;
-                    case 108:
-                        kh->khachHang->tienPhong = stay * 100000;
-                        phong->tinhTrang = "Trong";
-                        break;
-                    case 109:
-                        kh->khachHang->tienPhong = stay * 100000;
-                        phong->tinhTrang = "Trong";
-                        break;
-                    case 110:
-                        kh->khachHang->tienPhong = stay * 100000;
-                        phong->tinhTrang = "Trong";
-                        break;
-                    default:
-                }
-            float tongTien = soNgayThue * current->phong->giaThue;
+            if (current->phongThue) {
+                current->phongThue->tinhtrang = false; // Đặt phòng lại thành trống
+            }
 
-            printf("Số ngày ở: %.0f\n", soNgayThue);
-            printf("Tiền phòng phải thanh toán: %.2f\n", tongTien);
-            xoaKhachHang(kh);
-            printf("Check-out thành công!\n");
+            free(current);
+            printf("Xoa khach hang thanh cong!\n");
             return;
         }
 
-    printf("Khách hàng không tồn tại trong danh sách!\n");
+        prev = current;
+        current = current->next;
+    }
+
+    printf("Khong tim thay khach hang voi CCCD: %s\n", cccd);
 }
 
-
-// Hàm liệt kê đồ nội thất của phòng
-void lietKeDoNoiThat(Phong *phong) {
-    if (phong == NULL) {
-        printf("Phòng không tồn tại!\n");
+// Thanh toán tiền phòng cho khách hàng
+void thanhToanTienPhong(DanhSachLienKet *danhSach, const char *cccd) {
+    KhachHang *kh = timKhachHangTheoCCCD(danhSach, cccd);
+    if (!kh) {
+        printf("Khach hang khong ton tai!\n");
         return;
     }
 
-    printf("Danh sách đồ nội thất của phòng mã %d:\n", phong->maPhong);
-    DoNoiThat *doNoiThat = phong->danhSachDoNoiThat;
-    if (doNoiThat == NULL) {
-        printf("Phòng chưa có đồ nội thất.\n");
+    if (!kh->phongThue) {
+        printf("Khach hang chua thue phong!\n");
         return;
     }
 
-    while (doNoiThat != NULL) {
-        printf("- %s (Tình trạng: %s)\n", doNoiThat->tenDo, doNoiThat->tinhTrang);
-        doNoiThat = doNoiThat->next;
+    char ngayTra[15];
+    printf("Nhap ngay tra phong (dd/mm/yyyy): ");
+    nhapChuoi("", ngayTra, sizeof(ngayTra));
+
+    time_t tThue = mktime(strptime(kh->ngayThue, "%d/%m/%Y", NULL));
+    time_t tTra = mktime(strptime(ngayTra, "%d/%m/%Y", NULL));
+
+    if (tTra < tThue) {
+        printf("Ngay tra phong khong hop le!\n");
+        return;
     }
+
+    double soNgayThue = difftime(tTra, tThue) / (60 * 60 * 24);
+    float tienPhong = soNgayThue * kh->phongThue->giaThue;
+
+    printf("So ngay thue: %.0f\n", soNgayThue);
+    printf("Tien phong: %.2f\n", tienPhong);
+
+    kh->phongThue->tinhtrang = false;
+    kh->phongThue = NULL;
+
+    printf("Thanh toan thanh cong!\n");
 }
-
-
-// Hàm kiểm tra tình trạng đồ nội thất trong phòng
-void kiemTraTinhTrangDoNoiThat(Phong *phong) {
-    if (phong == NULL) {
-        printf("Phòng không tồn tại!\n");
-        return;
+// Hàm đặt phòng
+void datPhong(DanhSachLienKet *danhSach, char cccd[15]) {
+    KhachHang *kh = timKhachHangTheoCCCD(danhSach, cccd);
+    if (!kh) {
+        printf("Khach hang chua ton tai! Vui long nhap thong tin khach hang moi:\n");
+        themKhachHang(danhSach);
+        kh = timKhachHangTheoCCCD(danhSach, cccd);
     }
 
-    printf("Kiểm tra tình trạng đồ nội thất của phòng mã %d:\n", phong->maPhong);
-    ChiTietPhong(phong);
-    DoNoiThat *doNoiThat = phong->danhSachDoNoiThat;
-       
-    bool coVanDe = false;
-    float Tien = 0;
-    while (doNoiThat != NULL) {
-        if (strcmp(doNoiThat->tinhTrang, "Hỏng") == 0 ) {
-            printf("- %s (Tình trạng: %s)\n", doNoiThat->tenDo, doNoiThat->tinhTrang);
-            coVanDe = true;
-            Tien += 100000;
+    int maPhong;
+    printf("Nhap ma phong can dat: ");
+    scanf("%d", &maPhong);
+    getchar();
+
+    Phong *ph = danhSach->DanhSachPhong;
+    while (ph) {
+        if (ph->maPhong == maPhong) {
+            break;
         }
-            switch (doNoiThat->tinhTrang)
-            {
-            case "Hỏng":
-                if(phong->DanhSachDoNoiThat->loaiDo == "TuLanh"){
-                    printf("TuLanh hong");
-                    Tien = Tien + 100000;
-                }
-                if(phong->DanhSachDoNoiThat->loaiDo == "Tivi"){
-                    printf("Tivi hong");
-                    Tien = Tien + 100000;
-                }
-                if(phong->DanhSachDoNoiThat->loaiDo == "BanTrangDiem"){
-                    printf("BanTrangDiem hong");
-                    Tien = Tien + 100000;
-                }
-                if(phong->DanhSachDoNoiThat->loaiDo == "BonCau"){
-                    printf("BonCau hong");
-                    Tien = Tien + 100000;
-                }
-                if(phong->DanhSachDoNoiThat->loaiDo == "Lavabo"){
-                    printf("Lavabo hong");
-                    Tien = Tien + 100000;
-                }
-                if(phong->DanhSachDoNoiThat->loaiDo == "GuongNhaTam"){
-                    printf("GuongNhaTam hong");
-                    Tien = Tien + 100000;
-                }
-                if(phong->DanhSachDoNoiThat->loaiDo == "Giuong"){
-                    printf("Giuong hong");
-                    Tien = Tien + 100000;
-                }
-                if(phong->DanhSachDoNoiThat->loaiDo == "TuQuanAo"){
-                    printf("TuQuanAo hong");
-                    Tien = Tien + 100000;
-                }
-                if(phong->DanhSachDoNoiThat->loaiDo == "DepDiTrongNha"){
-                    printf("DepDiTrongNha hong");
-                    Tien = Tien + 100000;
-                }
-
-                break;
-                default:
-                break;
-            }
-            }
-        doNoiThat = doNoiThat->next;
+        ph = ph->next;
     }
 
-    if (!coVanDe) {
-        printf("Tất cả đồ nội thất trong phòng đều ở tình trạng tốt.\n");
-    } else {
-        printf("Tổng số tiền bồi thường là: %.2f\n", Tien);
+    if (!ph) {
+        printf("Phong khong ton tai!\n");
+        return;
     }
+
+    if (ph->tinhtrang) {
+        printf("Phong da duoc thue!\n");
+        return;
+    }
+
+    char ngayThue[15];
+    printf("Nhap ngay thue (dd/mm/yyyy): ");
+    nhapChuoi("", ngayThue, sizeof(ngayThue));
+    strcpy(kh->ngayThue, ngayThue);
+
+    ph->tinhtrang = true;
+    kh->phongThue = ph;
+    printf("Dat phong thanh cong!\n");
+}
+// hàm sửa thông tin của khách hàng
+void suaThongTinKhachHang(DanhSachLienKet *danhSach) {
+    char cccd[15];
+    printf("Nhap CCCD cua khach hang can sua thong tin: ");
+    nhapChuoi("", cccd, sizeof(cccd));
+
+    KhachHang *kh = timKhachHangTheoCCCD(danhSach, cccd);
+    if (!kh) {
+        printf("Khach hang khong ton tai!\n");
+        return;
+    }
+    int choose;
+    do {
+        printf("\nLua chon:\n");
+        printf("1. Sua ten\n");
+        printf("2. Sua dia chi\n");
+        printf("3. Sua so dien thoai\n");
+        printf("4. Thoat\n");
+        printf("Nhap lua chon cua ban: ");
+        scanf("%d", &choose);
+        getchar();
+        switch (choose) {
+            case 1:
+                nhapChuoi("Nhap ten moi: ", kh->ten, sizeof(kh->ten));
+                break;
+            case 2:
+                nhapChuoi("Nhap dia chi moi: ", kh->queQuan, sizeof(kh->queQuan));
+                break;
+            case 3:
+                nhapChuoi("Nhap so dien thoai moi: ", kh->soDienThoai, sizeof(kh->soDienThoai));
+                break;
+            case 4:
+                break;
+            default:
+                printf("Lua chon khong hop le!\n");
+                break;
+        }
+    } while (choose != 4);
 }
 
 
-// hàm thông tin chi tiết về từng phòng
-void ChiTietPhong(void) {
-    
-    for (int i = 0; i < 10; i++) {
-        Phong[i].maPhong = 101 + 1 * i;
-    }
-    strcpy(Phong[0].kieuPhong,"Tieu Chuan   ");
-    strcpy(Phong[1].kieuPhong,"Tieu Chuan   ");
-    strcpy(Phong[2].kieuPhong,"Tieu Chuan   ");
-    strcpy(Phong[3].kieuPhong,"Vip 1  ");
-    strcpy(Phong[4].kieuPhong,"Vip 1  ");    strcpy(Phong[5].kieuPhong,"Vip 1  ");
-    strcpy(Phong[6].kieuPhong,"Vip 1  ");
-    strcpy(Phong[7].kieuPhong,"vip 2   ");
-    strcpy(Phong[8].kieuPhong,"vip 2   ");
-    strcpy(Phong[9].kieuPhong,"vip promax   ");
-    float giaThue[10] = {1000000, 1000000, 1000000, 2000000, 2000000, 2000000, 2000000, 3000000, 3000000, 3000000};
-    for (int i = 0; i < 10; i++) {
-        Phong[i].giaThue = giaThue[i];
-    }
-    for (int i = 0; i < 10; i++) {
-        Phong[i].danhSachDoNoiThat = (DoNoiThat *)malloc(sizeof(DoNoiThat));
-        strcpy(Phong[i].danhSachDoNoiThat->tenDo, "TuLanh");
-        Phong[i].danhSachDoNoiThat->next = (DoNoiThat *)malloc(sizeof(DoNoiThat));
-        strcpy(Phong[i].danhSachDoNoiThat->next->tenDo, "Tivi");
-        Phong[i].danhSachDoNoiThat->next->next = (DoNoiThat *)malloc(sizeof(DoNoiThat));
-        strcpy(Phong[i].danhSachDoNoiThat->next->next->tenDo, "BanTrangDiem");
-        Phong[i].danhSachDoNoiThat->next->next->next = (DoNoiThat *)malloc(sizeof(DoNoiThat));
-        strcpy(Phong[i].danhSachDoNoiThat->next->next->next->tenDo, "BonCau");
-        Phong[i].danhSachDoNoiThat->next->next->next->next = (DoNoiThat *)malloc(sizeof(DoNoiThat));
-        strcpy(Phong[i].danhSachDoNoiThat->next->next->next->next->tenDo, "Lavabo");
-        Phong[i].danhSachDoNoiThat->next->next->next->next->next = (DoNoiThat *)malloc(sizeof(DoNoiThat));
-        strcpy(Phong[i].danhSachDoNoiThat->next->next->next->next->next->tenDo, "GuongNhaTam");
-        Phong[i].danhSachDoNoiThat->next->next->next->next->next->next = (DoNoiThat *)malloc(sizeof(DoNoiThat));
-        strcpy(Phong[i].danhSachDoNoiThat->next->next->next->next->next->next->tenDo, "Giuong");
-        Phong[i].danhSachDoNoiThat->next->next->next->next->next->next->next = (DoNoiThat *)malloc(sizeof(DoNoiThat));
-        strcpy(Phong[i].danhSachDoNoiThat->next->next->next->next->next->next->next->tenDo, "TuQuanAo");
-        Phong[i].danhSachDoNoiThat->next->next->next->next->next->next->next->next = (DoNoiThat *)malloc(sizeof(DoNoiThat));
-        strcpy(Phong[i].danhSachDoNoiThat->next->next->next->next->next->next->next->next->tenDo, "DepDiTrongNha");
-    }
+// Hàm main
+int main() {
+    DanhSachLienKet *danhSach = taoDanhSach();
+    them10PhongMacDinh(danhSach);
+    int luaChon;
 
- }
+    do {
+        printf("\nQuan ly khach san:\n");
+        printf("1. Them khach hang\n");
+        printf("2. Hien thi danh sach khach hang\n");
+        printf("3. Hien thi danh sach phong\n");
+        printf("4. Dat phong cho khach\n");
+        printf("5. Thanh toan tien phong\n");
+        printf("6. Sua thong tin khach hang\n");
+        printf("7. Thoat\n");
+        printf("Nhap lua chon cua ban: ");
+        scanf("%d", &luaChon);
+        getchar();
+
+        switch (luaChon) {
+            case 1:
+                themKhachHang(danhSach);
+                break;
+            case 2:
+                hienThiDanhSachKhachHang(danhSach);
+                break;
+            case 3:
+                hienThi10PhongMacDinh(danhSach);
+                break;
+            case 4: {
+                char cccd[15];
+                printf("Nhap so CCCD cua khach hang: ");
+                nhapChuoi("", cccd, sizeof(cccd));
+                datPhong(danhSach, cccd);
+                break;
+            }
+            case 5: {
+                char cccd[15];
+                printf("Nhap so CCCD cua khach hang: ");
+                nhapChuoi("", cccd, sizeof(cccd));
+                thanhToanTienPhong(danhSach, cccd);
+                break;
+            }
+            case 6:
+                suaThongTinKhachHang(danhSach);
+                break;
+            case 7:
+                printf("Thoat chuong trinh!\n");
+                break;
+            default:
+                printf("Lua chon khong hop le!\n");
+        }
+    } while (luaChon != 7);
+
+    return 0;
+}
