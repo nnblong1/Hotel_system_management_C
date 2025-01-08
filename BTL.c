@@ -4,18 +4,24 @@
 #include <stdbool.h>
 #include <time.h>
 
-// Struct thông tin Phòng
+// Struct thong tin phong
 typedef struct Phong {
     int maPhong;
     char kieuPhong[20];
     int sogiuong;
     char thongTinPhong[50];
-    bool tinhtrang; // Trống 0, đã thuê 1
+    bool tinhtrang; 
     float giaThue;
     struct Phong *next;
 } Phong;
 
-// Struct thông tin Khách hàng
+//struct Dich vu
+typedef struct DichVu {
+    int soLuong;
+    float donGia, sogio;
+} DichVu;
+
+// struct KhachHang 
 typedef struct KhachHang {
     char ten[50];
     int namSinh;
@@ -25,16 +31,20 @@ typedef struct KhachHang {
     char queQuan[50];
     Phong *phongThue;
     char ngayThue[15];
+    DichVu doAn;
+    DichVu duaDon;
+    DichVu giatLa;
+    DichVu trongTre;
     struct KhachHang *next;
 } KhachHang;
 
-// Danh sách liên kết chính
+// Danh sach lien ket chinh
 typedef struct DanhSachLienKet {
     KhachHang *DanhSachKhachHang;
     Phong *DanhSachPhong;
 } DanhSachLienKet;
 
-// Tạo danh sách rỗng
+// Khoi tao danh sach
 DanhSachLienKet* taoDanhSach() {
     DanhSachLienKet *danhSach = (DanhSachLienKet *)malloc(sizeof(DanhSachLienKet));
     danhSach->DanhSachKhachHang = NULL;
@@ -42,7 +52,7 @@ DanhSachLienKet* taoDanhSach() {
     return danhSach;
 }
 
-// Kiểm tra danh sách rỗng
+// Kiem tra danh sach rong
 bool isEmptyKhachHang(DanhSachLienKet *danhSach) {
     return danhSach->DanhSachKhachHang == NULL;
 }
@@ -51,20 +61,20 @@ bool isEmptyPhong(DanhSachLienKet *danhSach) {
     return danhSach->DanhSachPhong == NULL;
 }
 
-// Hàm nhập chuỗi
+// Ham nhap chuoi
 void nhapChuoi(const char *thongDiep, char *ketQua, int kichThuoc) {
     printf("%s", thongDiep);
     fgets(ketQua, kichThuoc, stdin);
-    ketQua[strcspn(ketQua, "\n")] = '\0'; // Xóa ký tự xuống dòng
+    ketQua[strcspn(ketQua, "\n")] = '\0'; 
 }
 
-// Hàm thêm khách hàng mới
+// Ham them khach hang moi
 void themKhachHang(DanhSachLienKet *danhSach) {
     char cccd[15];
     printf("Nhap so CCCD cua khach hang: ");
     nhapChuoi("", cccd, sizeof(cccd));
 
-    // Kiểm tra khách hàng đã tồn tại hay chưa
+    // Kiem tra khach hang ton tai hay chua
     KhachHang *current = danhSach->DanhSachKhachHang;
     while (current) {
         if (strcmp(current->cccd, cccd) == 0) {
@@ -74,7 +84,7 @@ void themKhachHang(DanhSachLienKet *danhSach) {
         current = current->next;
     }
 
-    // Tạo khách hàng mới
+    // Tao khach hang moi
     KhachHang *kh = (KhachHang *)malloc(sizeof(KhachHang));
     if (!kh) {
         printf("Khong the cap phat bo nho!\n");
@@ -91,10 +101,10 @@ void themKhachHang(DanhSachLienKet *danhSach) {
     nhapChuoi("Nhap que quan: ", kh->queQuan, sizeof(kh->queQuan));
 
     kh->phongThue = NULL;
-    strcpy(kh->ngayThue, ""); // Ngày thuê trống
+    strcpy(kh->ngayThue, "");
     kh->next = NULL;
 
-    // Thêm khách hàng vào danh sách liên kết
+    // Them khach hang vao danh sach lien ket
     if (danhSach->DanhSachKhachHang == NULL) {
         danhSach->DanhSachKhachHang = kh;
     } else {
@@ -106,7 +116,7 @@ void themKhachHang(DanhSachLienKet *danhSach) {
     }
     printf("Them khach hang thanh cong!\n");
 }
-// hàm thêm phòng
+// ham them phong
 void themPhong(DanhSachLienKet *danhSach, Phong *phong) {
     if (danhSach->DanhSachPhong == NULL) {
         danhSach->DanhSachPhong = phong;
@@ -118,7 +128,7 @@ void themPhong(DanhSachLienKet *danhSach, Phong *phong) {
         current->next = phong;
     }
 }
-// hàm thêm 10 phòng mặc định
+// Them 10 phong mac dinh
 
 void them10PhongMacDinh(DanhSachLienKet *danhSach) {
     int maPhong[10] = {101, 102, 103, 104, 105, 106, 107, 108, 109, 110};
@@ -152,7 +162,7 @@ void them10PhongMacDinh(DanhSachLienKet *danhSach) {
 
     printf("Da them 10 phong mac dinh vao danh sach!\n");
 }
-// hàm hiển thị 10 phòng mặc định
+// Ham hien thi 10 phong mac dinh
 void hienThi10PhongMacDinh(DanhSachLienKet *danhSach) {
     Phong *current = danhSach->DanhSachPhong;
     int count = 0;
@@ -163,7 +173,7 @@ void hienThi10PhongMacDinh(DanhSachLienKet *danhSach) {
         count++;
     }
 }
-// Hàm tìm khách hàng theo CCCD
+// Ham tim khach hang theo cccd
 KhachHang* timKhachHangTheoCCCD(DanhSachLienKet *danhSach, const char *cccd) {
     KhachHang *current = danhSach->DanhSachKhachHang;
     while (current) {
@@ -175,7 +185,7 @@ KhachHang* timKhachHangTheoCCCD(DanhSachLienKet *danhSach, const char *cccd) {
     return NULL;
 }
 
-// Hàm tìm phòng còn trống
+// ham tim phong con trong
 Phong* timPhongConTrong(DanhSachLienKet *danhSach) {
     Phong *current = danhSach->DanhSachPhong;
     while (current) {
@@ -187,7 +197,7 @@ Phong* timPhongConTrong(DanhSachLienKet *danhSach) {
     return NULL;
 }
 
-// Hiển thị danh sách khách hàng theo bảng cơ sở dữ liệu
+// Ham hien thi danh sach khach hang
 void hienThiDanhSachKhachHang(DanhSachLienKet *danhSach) {
     if (isEmptyKhachHang(danhSach)) {
         printf("Danh sach khach hang rong!\n");
@@ -208,7 +218,7 @@ void hienThiDanhSachKhachHang(DanhSachLienKet *danhSach) {
     printf("+---------------------------------------+\n");
 }
 
-// Xóa khách hàng khỏi danh sách
+// Xoa khach hang khoi danh sach
 void xoaKhachHang(DanhSachLienKet *danhSach, const char *cccd) {
     if (isEmptyKhachHang(danhSach)) {
         printf("Danh sach khach hang rong!\n");
@@ -227,7 +237,7 @@ void xoaKhachHang(DanhSachLienKet *danhSach, const char *cccd) {
             }
 
             if (current->phongThue) {
-                current->phongThue->tinhtrang = false; // Đặt phòng lại thành trống
+                current->phongThue->tinhtrang = false; // reset tinh trang phong ve false
             }
 
             free(current);
@@ -242,43 +252,33 @@ void xoaKhachHang(DanhSachLienKet *danhSach, const char *cccd) {
     printf("Khong tim thay khach hang voi CCCD: %s\n", cccd);
 }
 
-// Thanh toán tiền phòng cho khách hàng
-void thanhToanTienPhong(DanhSachLienKet *danhSach, const char *cccd) {
-    KhachHang *kh = timKhachHangTheoCCCD(danhSach, cccd);
-    if (!kh) {
-        printf("Khach hang khong ton tai!\n");
-        return;
+// ham tinh so ngay giua 2 moc thoi gian
+int tinhSoNgay(const char *ngayBatDau, const char *ngayKetThuc) {
+    struct tm tmBatDau = {0}, tmKetThuc = {0};
+
+    
+    if (sscanf(ngayBatDau, "%d/%d/%d", &tmBatDau.tm_mday, &tmBatDau.tm_mon, &tmBatDau.tm_year) != 3 ||
+        sscanf(ngayKetThuc, "%d/%d/%d", &tmKetThuc.tm_mday, &tmKetThuc.tm_mon, &tmKetThuc.tm_year) != 3) {
+        return -1; 
     }
 
-    if (!kh->phongThue) {
-        printf("Khach hang chua thue phong!\n");
-        return;
+    tmBatDau.tm_mon -= 1;  
+    tmBatDau.tm_year -= 1900; 
+    tmKetThuc.tm_mon -= 1;
+    tmKetThuc.tm_year -= 1900;
+
+    time_t timeBatDau = mktime(&tmBatDau);
+    time_t timeKetThuc = mktime(&tmKetThuc);
+
+    if (timeBatDau == -1 || timeKetThuc == -1 || timeKetThuc < timeBatDau) {
+        return -1; //
     }
 
-    char ngayTra[15];
-    printf("Nhap ngay tra phong (dd/mm/yyyy): ");
-    nhapChuoi("", ngayTra, sizeof(ngayTra));
-
-    time_t tThue = mktime(strptime(kh->ngayThue, "%d/%m/%Y", NULL));
-    time_t tTra = mktime(strptime(ngayTra, "%d/%m/%Y", NULL));
-
-    if (tTra < tThue) {
-        printf("Ngay tra phong khong hop le!\n");
-        return;
-    }
-
-    double soNgayThue = difftime(tTra, tThue) / (60 * 60 * 24);
-    float tienPhong = soNgayThue * kh->phongThue->giaThue;
-
-    printf("So ngay thue: %.0f\n", soNgayThue);
-    printf("Tien phong: %.2f\n", tienPhong);
-
-    kh->phongThue->tinhtrang = false;
-    kh->phongThue = NULL;
-
-    printf("Thanh toan thanh cong!\n");
+    double diffInSeconds = difftime(timeKetThuc, timeBatDau);
+    return (int)(diffInSeconds / (60 * 60 * 24)); // tra ve so ngay
 }
-// Hàm đặt phòng
+
+// Ham dat phong
 void datPhong(DanhSachLienKet *danhSach, char cccd[15]) {
     KhachHang *kh = timKhachHangTheoCCCD(danhSach, cccd);
     if (!kh) {
@@ -319,7 +319,7 @@ void datPhong(DanhSachLienKet *danhSach, char cccd[15]) {
     kh->phongThue = ph;
     printf("Dat phong thanh cong!\n");
 }
-// hàm sửa thông tin của khách hàng
+// Ham sua thong tin khach hang
 void suaThongTinKhachHang(DanhSachLienKet *danhSach) {
     char cccd[15];
     printf("Nhap CCCD cua khach hang can sua thong tin: ");
@@ -359,8 +359,190 @@ void suaThongTinKhachHang(DanhSachLienKet *danhSach) {
     } while (choose != 4);
 }
 
+// Ham them dich vu
+void themDichVu(DanhSachLienKet *danhSach) {
+    char cccd[15];
+    printf("Nhap CCCD cua khach hang: ");
+    nhapChuoi("", cccd, sizeof(cccd));
 
-// Hàm main
+    KhachHang *kh = timKhachHangTheoCCCD(danhSach, cccd);
+    if (!kh) {
+        printf("Khach hang khong ton tai!\n");
+        return;
+    }
+
+    int luaChon;
+    printf("Chon dich vu can them:\n");
+    printf("1. Do an\n2. Dua don\n3. Giat la\n4. Trong tre\n");
+    printf("Nhap lua chon: ");
+    scanf("%d", &luaChon);
+    getchar();
+
+    int soLuong;
+    float donGia, sogio;
+    printf("Nhap so luong (don vi la kilogam voi giat la): ");
+    scanf("%d", &soLuong);
+    printf("Nhap don gia: ");
+    scanf("%f", &donGia);
+    printf("Nhap so gio: ");
+    scanf("%f", &sogio);
+    getchar();
+
+    switch (luaChon) {
+        case 1:
+            kh->doAn.soLuong += soLuong;
+            kh->doAn.donGia = donGia;
+            break;
+        case 2:
+            kh->duaDon.sogio += sogio;
+            kh->duaDon.donGia = donGia;
+            break;
+        case 3:
+            kh->giatLa.soLuong += soLuong;
+            kh->giatLa.donGia = donGia;
+            break;
+        case 4:
+            kh->trongTre.sogio += sogio;
+            kh->trongTre.donGia = donGia;
+            break;
+        default:
+            printf("Lua chon khong hop le!\n");
+    }
+
+    printf("Them dich vu thanh cong!\n");
+}
+
+
+// Ham xoa dich vu
+void xoaDichVu(DanhSachLienKet *danhSach) {
+    char cccd[15];
+    printf("Nhap CCCD cua khach hang: ");
+    nhapChuoi("", cccd, sizeof(cccd));
+
+    KhachHang *kh = timKhachHangTheoCCCD(danhSach, cccd);
+    if (!kh) {
+        printf("Khach hang khong ton tai!\n");
+        return;
+    }
+
+    int luaChon;
+    printf("Chon dich vu can xoa:\n");
+    printf("1. Do an\n2. Dua don\n3. Giat la\n4. Trong tre\n");
+    printf("Nhap lua chon: ");
+    scanf("%d", &luaChon);
+    getchar();
+
+    switch (luaChon) {
+        case 1:
+            kh->doAn.soLuong = 0;
+            kh->doAn.donGia = 0;
+            break;
+        case 2:
+            kh->duaDon.sogio = 0;
+            kh->duaDon.donGia = 0;
+            break;
+        case 3:
+            kh->giatLa.soLuong = 0;
+            kh->giatLa.donGia = 0;
+            break;
+        case 4:
+            kh->trongTre.sogio = 0;
+            kh->trongTre.donGia = 0;
+            break;
+        default:
+            printf("Lua chon khong hop le!\n");
+    }
+
+    printf("Xoa dich vu thanh cong!\n");
+}
+
+// ham tinh tong chi phi dich vu
+float tinhTongChiPhiDichVu(KhachHang *kh) {
+    if (!kh) return 0;
+    float tongChiPhi = 0;
+    tongChiPhi += kh->doAn.soLuong * kh->doAn.donGia;
+    tongChiPhi += kh->duaDon.sogio * kh->duaDon.donGia;
+    tongChiPhi += kh->giatLa.soLuong * kh->giatLa.donGia;
+    tongChiPhi += kh->trongTre.sogio * kh->trongTre.donGia;
+    return tongChiPhi;
+}
+
+// ham hien thi thong tin hoa don
+void hienThiHoaDon(DanhSachLienKet *danhSach, const char *cccd) {
+    KhachHang *kh = timKhachHangTheoCCCD(danhSach, cccd);
+    if (!kh) {
+        printf("Khach hang khong ton tai!\n");
+        return;
+    }
+
+    if (!kh->phongThue) {
+        printf("Khach hang chua thue phong, khong co hoa don.\n");
+        return;
+    }
+    
+    // Tinh tong chi phi thue phong
+    float chiPhiPhong = 0;
+    if (strlen(kh->ngayThue) > 0) {
+        char ngayTra[15];
+        printf("Nhap ngay tra phong (dd/mm/yyyy): ");
+        nhapChuoi("", ngayTra, sizeof(ngayTra));
+
+        int soNgayThue = tinhSoNgay(kh->ngayThue, ngayTra);
+        if (soNgayThue > 0) {
+            chiPhiPhong = soNgayThue * kh->phongThue->giaThue;
+        } else {
+            printf("Ngay thue hoac ngay tra khong hop le!\n");
+            return;
+        }
+    }
+
+    printf("================ HOA DON CHI TIET ================\n");
+    printf("| Khach hang: %s                             |\n", kh->ten);
+    printf("| CCCD: %s                                    |\n", kh->cccd);
+    printf("| Phong thue: %s (%d giuong)                 |\n", kh->phongThue->kieuPhong, kh->phongThue->sogiuong);
+    printf("| Ngay thue: %s                               |\n", kh->ngayThue);
+    printf("| Dich vu da su dung: \n");
+    printf("%-20s %-10s %-10s %-15s\n", "Ten dich vu", "So luong", "So gio", "Don gia");
+    printf("-------------------------------------------------\n");
+    printf("%-20s %-20d %-15.2f\n",
+        kh->doAn,
+        kh->doAn.soLuong,
+        kh->doAn.donGia);
+    printf("%-30s %-10.2f %-15.2f\n",
+       kh->duaDon,
+       kh->duaDon.sogio,
+       kh->duaDon.donGia);
+    printf("%-20s %-20d %-15.2f\n",
+       kh->giatLa,
+       kh->giatLa.soLuong,
+       kh->giatLa.donGia);
+    printf("%-30s %-10.2f %-15.2f\n",
+       kh->trongTre,
+       kh->trongTre.sogio,
+       kh->trongTre.donGia);
+    printf("-------------------------------------------------\n");
+
+    // Tinh tong chi phi dich vu
+    float chiPhiDichVu = tinhTongChiPhiDichVu(kh);
+
+    // Tong hoa don
+    float tongHoaDon = chiPhiPhong + chiPhiDichVu;
+
+    printf("| Chi phi thue phong: %.2f VND               |\n", chiPhiPhong);
+    printf("| Chi phi dich vu: %.2f VND                  |\n", chiPhiDichVu);
+    printf("| Tong chi phi: %.2f VND                     |\n", chiPhiPhong + chiPhiDichVu);
+
+    // Reset trang thai phong va khach hang sau khi thanh toan
+    kh->phongThue->tinhtrang = false;
+    kh->phongThue = NULL;
+    strcpy(kh->ngayThue, "");
+    kh->doAn.soLuong = kh->duaDon.soLuong = kh->giatLa.soLuong = kh->trongTre.soLuong = 0;
+    kh->doAn.donGia = kh->duaDon.donGia = kh->giatLa.donGia = kh->trongTre.donGia = 0;
+
+    printf("Thanh toan thanh cong va reset thong tin khach hang!\n");
+}
+
+// main
 int main() {
     DanhSachLienKet *danhSach = taoDanhSach();
     them10PhongMacDinh(danhSach);
@@ -372,9 +554,11 @@ int main() {
         printf("2. Hien thi danh sach khach hang\n");
         printf("3. Hien thi danh sach phong\n");
         printf("4. Dat phong cho khach\n");
-        printf("5. Thanh toan tien phong\n");
-        printf("6. Sua thong tin khach hang\n");
-        printf("7. Thoat\n");
+        printf("5. Sua thong tin khach hang\n");
+        printf("6. Them dich vu\n");
+        printf("7. Xoa dich vu\n");
+        printf("8. Hoa don va thanh toan\n");
+        printf("9. Thoat\n");
         printf("Nhap lua chon cua ban: ");
         scanf("%d", &luaChon);
         getchar();
@@ -393,26 +577,33 @@ int main() {
                 char cccd[15];
                 printf("Nhap so CCCD cua khach hang: ");
                 nhapChuoi("", cccd, sizeof(cccd));
+                hienThi10PhongMacDinh(danhSach);
                 datPhong(danhSach, cccd);
                 break;
             }
-            case 5: {
-                char cccd[15];
-                printf("Nhap so CCCD cua khach hang: ");
-                nhapChuoi("", cccd, sizeof(cccd));
-                thanhToanTienPhong(danhSach, cccd);
-                break;
-            }
-            case 6:
+            case 5:
                 suaThongTinKhachHang(danhSach);
                 break;
+            case 6:
+                themDichVu(danhSach);
+                break;
             case 7:
+                xoaDichVu(danhSach);
+                break;
+            case 8:
+                char cccd[15];
+                printf("Nhap CCCD cua khach hang: ");
+                nhapChuoi("", cccd, sizeof(cccd));
+                hienThiHoaDon(danhSach, cccd);
+                break;
+            case 9:
                 printf("Thoat chuong trinh!\n");
                 break;
             default:
                 printf("Lua chon khong hop le!\n");
         }
-    } while (luaChon != 7);
+    } while (luaChon != 10);
 
     return 0;
 }
+
