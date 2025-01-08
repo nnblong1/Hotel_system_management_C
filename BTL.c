@@ -116,18 +116,6 @@ void themKhachHang(DanhSachLienKet *danhSach) {
     }
     printf("Them khach hang thanh cong!\n");
 }
-// ham them phong
-void themPhong(DanhSachLienKet *danhSach, Phong *phong) {
-    if (danhSach->DanhSachPhong == NULL) {
-        danhSach->DanhSachPhong = phong;
-    } else {
-        Phong *current = danhSach->DanhSachPhong;
-        while (current->next) {
-            current = current->next;
-        }
-        current->next = phong;
-    }
-}
 // Them 10 phong mac dinh
 
 void them10PhongMacDinh(DanhSachLienKet *danhSach) {
