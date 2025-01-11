@@ -56,11 +56,6 @@ DanhSachLienKet* taoDanhSach() {
 bool isEmptyKhachHang(DanhSachLienKet *danhSach) {
     return danhSach->DanhSachKhachHang == NULL;
 }
-
-bool isEmptyPhong(DanhSachLienKet *danhSach) {
-    return danhSach->DanhSachPhong == NULL;
-}
-
 // Ham nhap chuoi
 void nhapChuoi(const char *thongDiep, char *ketQua, int kichThuoc) {
     printf("%s", thongDiep);
@@ -187,6 +182,11 @@ void hienThiDanhSachKhachHang(DanhSachLienKet *danhSach) {
     }
     printf("+---------------------------------------+\n");
 }
+// kiem tra phong trong
+bool isEmptyPhong(DanhSachLienKet *danhSach) {
+    return danhSach->DanhSachPhong == NULL;
+}
+
 // Ham them phong
 void themPhong(DanhSachLienKet *danhSach, Phong *phong) {
     if (danhSach->DanhSachPhong == NULL) {
