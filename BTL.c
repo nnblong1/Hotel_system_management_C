@@ -189,7 +189,7 @@ bool isEmptyPhong(DanhSachLienKet *danhSach) {
 
 // Ham them phong
 void themPhong(DanhSachLienKet *danhSach, Phong *phong) {
-    if (danhSach->DanhSachPhong == NULL) {
+    if (isEmptyPhong(danhSach)) {
         danhSach->DanhSachPhong = phong;
     } else {
         Phong *current = danhSach->DanhSachPhong;
